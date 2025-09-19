@@ -1,0 +1,162 @@
+import java.util.*;
+
+// --------------------- Abstract Class ---------------------
+abstract class Product {
+    protected int productId;
+    protected String name;
+    protected double price;
+
+    // Constructor
+    public Product(int productId, String name, double price) {
+        this.productId = productId;
+        this.name = name;
+        this.price = price;
+    }
+
+    // Abstract method
+    public abstract double calculateDiscount();
+
+    // Display product details
+    public void display() {
+        System.out.println("ID: " + productId + " | " + name + " | Price: " + price);
+    }
+}
+
+// --------------------- Electronics Class ---------------------
+class Electronics extends Product {
+    private static final double DISCOUNT = 0.10; // 10%
+
+    public Electronics(int productId, String name, double price) {
+        super(productId, name, price);
+    }
+
+    @Override
+    public double calculateDiscount() {
+        return price * DISCOUNT;
+    }
+}
+
+// --------------------- Clothing Class ---------------------
+class Clothing extends Product {
+    private static final double DISCOUNT = 0.20; // 20%
+
+    public Clothing(int productId, String name, double price) {
+        super(productId, name, price);
+    }
+
+    @Override
+    public double calculateDiscount() {
+        return price * DISCOUNT;
+    }
+}
+
+// --------------------- Order Class ---------------------
+class Order {
+    private static int orderCounter = 1;
+    private int orderId;
+    private List<Product> items = new ArrayList<>();
+    private double totalAmount;
+
+    public Order() {
+        this.orderId = orderCounter++;
+    }
+
+    public void addItem(Product p) {
+        items.add(p);
+        totalAmount += (p.price - p.calculateDiscount());
+        System.out.println(p.name + " added to cart!");
+    }
+
+    public void displayOrder() {
+        System.out.println("\n----- Order ID: " + orderId + " -----");
+        for (Product p : items) {
+            System.out.println(p.name + " | Price: " + p.price +
+                    " | Discount: " + p.calculateDiscount());
+        }
+        System.out.println("Total Amount Payable: " + totalAmount);
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+}
+
+// --------------------- Custom Exception ---------------------
+class ProductNotFoundException extends Exception {
+    public ProductNotFoundException(String msg) {
+        super(msg);
+    }
+}
+
+// --------------------- Main System ---------------------
+public class ECommerceSystem {
+    private static Map<Integer, Product> productCatalog = new HashMap<>();
+    private static Scanner sc = new Scanner(System.in);
+
+    // Initialize product catalog
+    static {
+        productCatalog.put(101, new Electronics(101, "Smartphone", 25000));
+        productCatalog.put(102, new Electronics(102, "Laptop", 55000));
+        productCatalog.put(201, new Clothing(201, "T-Shirt", 800));
+        productCatalog.put(202, new Clothing(202, "Jeans", 1800));
+    }
+
+    // Display product catalog
+    public static void displayProducts() {
+        System.out.println("\n----- Product Catalog -----");
+        for (Product p : productCatalog.values()) {
+            p.display();
+        }
+    }
+
+    // Search product by ID
+    public static Product searchProduct(int id) throws ProductNotFoundException {
+        if (!productCatalog.containsKey(id)) {
+            throw new ProductNotFoundException("Product ID " + id + " not found!");
+        }
+        return productCatalog.get(id);
+    }
+
+    // Main Menu
+    public static void main(String[] args) {
+        Order currentOrder = new Order();
+        int choice;
+
+        do {
+            System.out.println("\n===== E-Commerce Order System =====");
+            System.out.println("1. View Products");
+            System.out.println("2. Add Product to Cart");
+            System.out.println("3. View Cart & Checkout");
+            System.out.println("4. Exit");
+            System.out.print("Enter choice: ");
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    displayProducts();
+                    break;
+                case 2:
+                    displayProducts();
+                    System.out.print("Enter Product ID to add: ");
+                    int id = sc.nextInt();
+                    try {
+                        Product p = searchProduct(id);
+                        currentOrder.addItem(p);
+                    } catch (ProductNotFoundException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                    break;
+                case 3:
+                    currentOrder.displayOrder();
+                    break;
+                case 4:
+                    System.out.println("Thank you for shopping! Exiting...");
+                    break;
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        } while (choice != 4);
+
+        sc.close();
+    }
+}
